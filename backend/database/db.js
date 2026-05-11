@@ -2,10 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import sqlite3 from "sqlite3";
 
-const dbPath = path.resolve("database", "jimmys-lab.sqlite");
+const dbPath = path.resolve(process.env.DB_PATH ?? path.join("database", "jimmys-lab.sqlite"));
 const schemaPath = path.resolve("database", "schema.sql");
 
 sqlite3.verbose();
+fs.mkdirSync(path.dirname(dbPath), { recursive: true });
 export const db = new sqlite3.Database(dbPath);
 
 export function initDb() {

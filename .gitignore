@@ -1,6 +1,7 @@
 node_modules/
 dist/
 .git-store/
+data/
 *.tsbuildinfo
 
 backend/database/*.sqlite

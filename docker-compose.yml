@@ -1,0 +1,14 @@
+services:
+  jimmys-lab:
+    build:
+      context: .
+    image: jimmys-lab:local
+    ports:
+      - "4000:4000"
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DB_PATH: /data/jimmys-lab.sqlite
+    volumes:
+      - ./data:/data
+    restart: unless-stopped

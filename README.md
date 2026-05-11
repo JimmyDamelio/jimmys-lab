@@ -11,6 +11,26 @@ npm run dev
 
 Le backend Express ecoute sur `http://localhost:4000` et sert automatiquement le frontend Vite sur `http://localhost:5173` en mode developpement.
 
+## Lancer avec Docker
+
+```bash
+docker compose up --build
+```
+
+L'application est ensuite disponible sur:
+
+```text
+http://localhost:4000
+```
+
+La base SQLite est conservee dans `./data/jimmys-lab.sqlite` grace au volume Docker. Pour arreter:
+
+```bash
+docker compose down
+```
+
+Si Docker indique qu'il ne peut pas se connecter au daemon, verifie que Docker ou Podman est bien lance et que `DOCKER_HOST` pointe vers le bon socket.
+
 ## Fonctionnalites
 
 - Parcours progressif: fondamentaux, adressage, routage, services, securite, pentest ethique.

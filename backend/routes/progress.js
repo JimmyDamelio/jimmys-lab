@@ -19,14 +19,80 @@ progressRouter.get("/labs", async (_req, res, next) => {
   }
 });
 
+progressRouter.get("/missions", async (_req, res, next) => {
+  try {
+    res.json(await all("SELECT * FROM mission_evidence ORDER BY updated_at DESC"));
+  } catch (error) {
+    next(error);
+  }
+});
+
+progressRouter.get("/missions/:missionId", async (req, res, next) => {
+  try {
+    res.json(
+      await all("SELECT * FROM mission_evidence WHERE mission_id = ? ORDER BY step_index ASC", [req.params.missionId])
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
+progressRouter.post("/missions/:missionId/steps/:stepIndex", async (req, res, next) => {
+  try {
+    const {
+      observation = "",
+      command = "",
+      interpretation = "",
+      risk = "",
+      remediation = "",
+      completed = false
+    } = req.body;
+    const stepIndex = Number(req.params.stepIndex);
+
+    await run(
+      `INSERT INTO mission_evidence (
+         mission_id, step_index, observation, command, interpretation, risk, remediation, completed, updated_at
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+       ON CONFLICT(mission_id, step_index) DO UPDATE SET
+       observation = excluded.observation,
+       command = excluded.command,
+       interpretation = excluded.interpretation,
+       risk = excluded.risk,
+       remediation = excluded.remediation,
+       completed = excluded.completed,
+       updated_at = CURRENT_TIMESTAMP`,
+      [
+        req.params.missionId,
+        stepIndex,
+        String(observation ?? ""),
+        String(command ?? ""),
+        String(interpretation ?? ""),
+        String(risk ?? ""),
+        String(remediation ?? ""),
+        completed ? 1 : 0
+      ]
+    );
+    res.json(
+      await get("SELECT * FROM mission_evidence WHERE mission_id = ? AND step_index = ?", [
+        req.params.missionId,
+        stepIndex
+      ])
+    );
+  } catch (error) {
+    next(error);
+  }
+});
+
 progressRouter.get("/export", async (_req, res, next) => {
   try {
-    const [progress, labProgress, quizAttempts, notes, labRuns] = await Promise.all([
+    const [progress, labProgress, quizAttempts, notes, labRuns, missionEvidence] = await Promise.all([
       all("SELECT * FROM progress ORDER BY updated_at DESC"),
       all("SELECT * FROM lab_progress ORDER BY updated_at DESC"),
       all("SELECT * FROM quiz_attempts ORDER BY created_at DESC LIMIT 1000"),
       all("SELECT * FROM notes ORDER BY updated_at DESC"),
-      all("SELECT * FROM lab_runs ORDER BY created_at DESC LIMIT 500")
+      all("SELECT * FROM lab_runs ORDER BY created_at DESC LIMIT 500"),
+      all("SELECT * FROM mission_evidence ORDER BY updated_at DESC")
     ]);
     res.json({
       exported_at: new Date().toISOString(),
@@ -34,7 +100,8 @@ progressRouter.get("/export", async (_req, res, next) => {
       lab_progress: labProgress,
       quiz_attempts: quizAttempts,
       notes,
-      lab_runs: labRuns
+      lab_runs: labRuns,
+      mission_evidence: missionEvidence
     });
   } catch (error) {
     next(error);

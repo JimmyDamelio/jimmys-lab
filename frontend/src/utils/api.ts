@@ -1,4 +1,4 @@
-import type { LabProgressRow, ProgressRow, QuizAttemptRow } from "../types";
+import type { LabProgressRow, MissionEvidenceRow, ProgressRow, QuizAttemptRow } from "../types";
 
 const baseUrl = import.meta.env.VITE_API_URL ?? "";
 
@@ -38,6 +38,32 @@ export async function fetchLabProgress(): Promise<LabProgressRow[]> {
 
 export async function fetchProgressExport(): Promise<Record<string, unknown> | null> {
   const response = await fetch(`${baseUrl}/api/progress/export`);
+  if (!response.ok) return null;
+  return response.json();
+}
+
+export async function fetchMissionEvidence(): Promise<MissionEvidenceRow[]> {
+  const response = await fetch(`${baseUrl}/api/progress/missions`);
+  if (!response.ok) return [];
+  return response.json();
+}
+
+export async function fetchMissionEvidenceById(missionId: string): Promise<MissionEvidenceRow[]> {
+  const response = await fetch(`${baseUrl}/api/progress/missions/${missionId}`);
+  if (!response.ok) return [];
+  return response.json();
+}
+
+export async function saveMissionEvidence(
+  missionId: string,
+  stepIndex: number,
+  evidence: Pick<MissionEvidenceRow, "observation" | "command" | "interpretation" | "risk" | "remediation" | "completed">
+): Promise<MissionEvidenceRow | null> {
+  const response = await fetch(`${baseUrl}/api/progress/missions/${missionId}/steps/${stepIndex}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(evidence)
+  });
   if (!response.ok) return null;
   return response.json();
 }

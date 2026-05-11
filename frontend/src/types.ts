@@ -96,3 +96,15 @@ export interface Mission {
     remediation: string[];
   };
 }
+
+export interface MissionEvidenceRow {
+  mission_id: string;
+  step_index: number;
+  observation: string;
+  command: string;
+  interpretation: string;
+  risk: string;
+  remediation: string;
+  completed: 0 | 1;
+  updated_at: string;
+}

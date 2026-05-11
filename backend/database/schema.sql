@@ -34,3 +34,16 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
   answers TEXT NOT NULL DEFAULT '{}',
   created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS mission_evidence (
+  mission_id TEXT NOT NULL,
+  step_index INTEGER NOT NULL,
+  observation TEXT NOT NULL DEFAULT '',
+  command TEXT NOT NULL DEFAULT '',
+  interpretation TEXT NOT NULL DEFAULT '',
+  risk TEXT NOT NULL DEFAULT '',
+  remediation TEXT NOT NULL DEFAULT '',
+  completed INTEGER NOT NULL DEFAULT 0,
+  updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (mission_id, step_index)
+);

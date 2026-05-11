@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Activity, Award, BarChart3, BookOpen, Brain, ClipboardCheck, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, Award, BarChart3, BookOpen, Brain, ClipboardCheck, FileText, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import ProgressTracker from "./components/ProgressTracker";
 import { lessons } from "./data/curriculum";
@@ -17,8 +17,9 @@ const StatsPanel = lazy(() => import("./components/StatsPanel"));
 const MissionCenter = lazy(() => import("./components/MissionCenter"));
 const SkillsPanel = lazy(() => import("./components/SkillsPanel"));
 const ExamPanel = lazy(() => import("./components/ExamPanel"));
+const ReportsPanel = lazy(() => import("./components/ReportsPanel"));
 
-type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "skills" | "exam" | "tools" | "stats";
+type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "skills" | "exam" | "reports" | "tools" | "stats";
 type NavItem = [View, LucideIcon, string];
 
 function ViewLoader() {
@@ -118,6 +119,7 @@ export default function App() {
                 ["missions", ClipboardCheck, "Missions"],
                 ["skills", Brain, "Competences"],
                 ["exam", Award, "Examen"],
+                ["reports", FileText, "Rapports"],
                 ["tools", Wrench, "Outils"],
                 ["stats", BarChart3, "Stats"]
               ] satisfies NavItem[]).map(([id, Icon, label]) => (
@@ -173,6 +175,7 @@ export default function App() {
               />
             )}
             {view === "exam" && <ExamPanel />}
+            {view === "reports" && <ReportsPanel missionEvidence={missionEvidence} />}
             {view === "tools" && <ToolsPanel />}
             {view === "stats" && <StatsPanel lessons={lessons} progress={progress} labProgress={labProgress} />}
           </Suspense>

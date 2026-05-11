@@ -30,6 +30,45 @@ jimmys-lab/
   backend/    Node.js + Express + SQLite
 ```
 
+## Git et GitHub
+
+Le projet est publie ici:
+
+```text
+https://github.com/JimmyDamelio/jimmys-lab
+```
+
+Dans cet environnement, le dossier `.git` classique est reserve en lecture seule. Le depot Git local utilise donc `.git-store` comme repertoire Git alternatif.
+
+Utilise cette forme pour les commandes Git:
+
+```bash
+git --git-dir=.git-store --work-tree=. status
+git --git-dir=.git-store --work-tree=. log --oneline
+git --git-dir=.git-store --work-tree=. diff
+```
+
+Pour enregistrer une modification:
+
+```bash
+git --git-dir=.git-store --work-tree=. add .
+git --git-dir=.git-store --work-tree=. commit -m "Description courte du changement"
+```
+
+Pour pousser vers GitHub avec la cle SSH locale dediee:
+
+```bash
+GIT_SSH_COMMAND='ssh -F /dev/null -i ~/.ssh/id_ed25519_github -o IdentitiesOnly=yes' git --git-dir=.git-store --work-tree=. push
+```
+
+Le remote configure est:
+
+```text
+git@github.com:JimmyDamelio/jimmys-lab.git
+```
+
+Les fichiers lourds ou locaux sont ignores par `.gitignore`, notamment `node_modules/`, `frontend/dist/`, la base SQLite locale, les fichiers `.env` et les fichiers TypeScript generes.
+
 ## Notes de securite
 
 Les exercices pentest sont des simulations locales et doivent rester dans un cadre autorise. L'application ne lance pas d'outils offensifs reels contre des systemes externes.

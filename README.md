@@ -20,7 +20,7 @@ Le backend Express ecoute sur `http://localhost:4000` et sert automatiquement le
 - Diagrammes Mermaid pour les flux et modeles.
 - Lab pratique avec Monaco Editor et terminal xterm.js simule.
 - Persistance SQLite locale pour progression, notes et resultats de quiz.
-- Missions pentest encadrees avec preuves structurees sauvegardees en SQLite.
+- 10 missions pentest encadrees avec preuves structurees sauvegardees en SQLite.
 - Export Markdown des rapports de mission.
 - Tableau de competences calcule depuis cours, labs et missions.
 - Mode examen final avec scoring, historique SQLite et rapport Markdown.

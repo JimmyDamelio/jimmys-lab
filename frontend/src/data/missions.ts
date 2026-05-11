@@ -305,5 +305,463 @@ export const missions: Mission[] = [
         "Planifier une verification apres changement."
       ]
     }
+  },
+  {
+    id: "mission-05",
+    title: "Analyse de logs web suspects",
+    level: "Intermediaire",
+    duration: "45 min",
+    scenario:
+      "Un serveur web de lab presente des pics d'erreurs 404 et quelques requetes inhabituelles. Tu dois qualifier le signal sans confondre bruit, scan et attaque confirmee.",
+    scope: ["web.lab.local", "logs nginx simules", "fenetre 14:00-15:00"],
+    rules: [
+      "Ne pas attribuer d'intention sans preuve.",
+      "Preserver les lignes de log importantes.",
+      "Distinguer erreur applicative, scan opportuniste et tentative ciblee.",
+      "Terminer par une mesure de detection ou de durcissement."
+    ],
+    skills: ["Logs", "Detection", "HTTP", "Risque", "Reporting"],
+    assets: [
+      "Access log nginx simule",
+      "Endpoint /login",
+      "Requetes 404 repetees",
+      "User agents varies"
+    ],
+    steps: [
+      {
+        title: "Extraire les faits",
+        objective: "Identifier les lignes utiles: IP source, URL, statut HTTP, user agent et frequence.",
+        expectedEvidence: "Table courte: source, chemin, statut, volume, periode.",
+        mentorHints: [
+          "Commence par compter avant d'interpreter.",
+          "Un 404 isole n'est pas une compromission.",
+          "Regroupe par chemin et par source."
+        ],
+        commands: ["tshark -r capture.pcap -Y 'http'", "curl -I https://lab.local"],
+        commonMistake: "Confondre beaucoup d'erreurs 404 avec une exploitation reussie.",
+        validation: "Les observations sont factuelles et groupees."
+      },
+      {
+        title: "Qualifier le comportement",
+        objective: "Comparer les hypotheses: trafic normal, robot, scan, tentative d'enumeration.",
+        expectedEvidence: "Hypotheses avec arguments pour et contre.",
+        mentorHints: [
+          "Cherche les patterns: chemins admin, extensions, repetition.",
+          "Regarde le statut HTTP avec le chemin demande.",
+          "Une bonne qualification reste prudente."
+        ],
+        commands: ["curl -v https://example.com"],
+        commonMistake: "Annoncer une intrusion parce qu'un chemin sensible a ete demande.",
+        validation: "Au moins deux hypotheses sont comparees."
+      },
+      {
+        title: "Proposer une detection",
+        objective: "Definir une regle simple ou un indicateur a surveiller.",
+        expectedEvidence: "Signal, seuil, action et limite de faux positifs.",
+        mentorHints: [
+          "Une detection utile doit avoir un seuil.",
+          "Evite les alertes sur chaque 404.",
+          "Associe la detection a une action concrete."
+        ],
+        commands: ["sudo nft list ruleset"],
+        commonMistake: "Bloquer trop large sans comprendre l'impact utilisateur.",
+        validation: "La detection est mesurable et proportionnee."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "Les logs web montrent un signal a qualifier. Le bon livrable separe volume, chemins touches, preuve et recommandation de surveillance.",
+      technicalFindings: [
+        "Les statuts HTTP et chemins demandes permettent de differencier bruit et tentative ciblee.",
+        "La frequence et la repetition par source donnent le contexte.",
+        "La remediation doit limiter le bruit sans casser le service."
+      ],
+      remediation: [
+        "Mettre en place des seuils d'alerte sur chemins sensibles.",
+        "Journaliser les user agents et sources repetitives.",
+        "Verifier les routes admin et leur exposition."
+      ]
+    }
+  },
+  {
+    id: "mission-06",
+    title: "Durcissement SSH defensif",
+    level: "Intermediaire",
+    duration: "40 min",
+    scenario:
+      "Un serveur d'administration expose SSH en lab. Tu dois evaluer les risques de configuration et proposer un durcissement realiste.",
+    scope: ["admin.lab.local", "port 22 simule", "configuration sshd fictive"],
+    rules: [
+      "Ne pas bruteforcer.",
+      "Ne pas tester de mots de passe reels.",
+      "Raisonner configuration, exposition et journalisation.",
+      "Proposer des controles applicables par un admin."
+    ],
+    skills: ["SSH", "Durcissement", "Moindre privilege", "Detection", "Remediation"],
+    assets: [
+      "sshd_config simule",
+      "Port 22 filtre ou ouvert selon scenario",
+      "Extraits auth.log simules"
+    ],
+    steps: [
+      {
+        title: "Evaluer l'exposition",
+        objective: "Determiner si SSH devrait etre accessible et depuis quelles sources.",
+        expectedEvidence: "Source autorisee, port, filtrage attendu, justification.",
+        mentorHints: [
+          "Un service admin ne devrait pas etre expose partout.",
+          "Le filtrage source est souvent plus important que le port.",
+          "Note ce que tu ne peux pas conclure sans logs."
+        ],
+        commands: ["nmap -sS -Pn --top-ports 100 10.10.10.5", "sudo nft list ruleset"],
+        commonMistake: "Dire que SSH est dangereux simplement parce que le port existe.",
+        validation: "L'exposition est analysee avec contexte."
+      },
+      {
+        title: "Lister les controles de durcissement",
+        objective: "Identifier les options prioritaires: cles, root login, MFA, rate limiting, logs.",
+        expectedEvidence: "Controle, benefice, risque residuel.",
+        mentorHints: [
+          "Priorise les controles qui reduisent vraiment le risque.",
+          "Un changement doit rester operable.",
+          "La journalisation fait partie du durcissement."
+        ],
+        commands: ["ss -tulpn"],
+        commonMistake: "Proposer uniquement de changer le port SSH.",
+        validation: "Les controles sont priorises et justifies."
+      },
+      {
+        title: "Rediger la remediation",
+        objective: "Produire une recommandation exploitable et verifiable.",
+        expectedEvidence: "Plan court: config, filtrage, logs, test de verification.",
+        mentorHints: [
+          "Ajoute toujours un test apres changement.",
+          "Evite les recommandations vagues.",
+          "Precise le proprietaire probable: systeme, reseau, IAM."
+        ],
+        commands: ["sudo nft add rule inet filter input tcp dport 443 accept"],
+        commonMistake: "Oublier comment verifier que la correction fonctionne.",
+        validation: "La remediation contient une verification."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "Le durcissement SSH vise a reduire l'exposition administrative sans bloquer l'exploitation legitime.",
+      technicalFindings: [
+        "L'acces SSH doit etre limite aux sources d'administration.",
+        "Les cles, le blocage root et la journalisation reduisent le risque.",
+        "Changer le port seul ne constitue pas une defense suffisante."
+      ],
+      remediation: [
+        "Desactiver root login et l'authentification par mot de passe si possible.",
+        "Limiter SSH par source via firewall ou VPN.",
+        "Surveiller les echecs repetes et tester l'acces admin apres changement."
+      ]
+    }
+  },
+  {
+    id: "mission-07",
+    title: "DNS mal configure",
+    level: "Avance",
+    duration: "50 min",
+    scenario:
+      "Un domaine interne expose trop d'informations DNS en lab. Tu dois verifier les risques sans effectuer d'action intrusive.",
+    scope: ["dns.lab.local", "zone lab.local", "resolveur 10.10.10.53"],
+    rules: [
+      "Interroger uniquement le DNS de lab.",
+      "Ne pas enumerer de domaines externes.",
+      "Documenter les enregistrements sensibles.",
+      "Proposer une correction cote DNS et reseau."
+    ],
+    skills: ["DNS", "Enumeration", "Risque", "Remediation", "Reporting"],
+    assets: [
+      "Zone lab.local simulee",
+      "Resolveur autorise 10.10.10.53",
+      "Enregistrements A, MX et TXT fictifs"
+    ],
+    steps: [
+      {
+        title: "Verifier la resolution autorisee",
+        objective: "Confirmer les reponses DNS utiles sans sortir du scope.",
+        expectedEvidence: "Nom, type d'enregistrement, valeur et interpretation.",
+        mentorHints: [
+          "Commence par les noms explicitement autorises.",
+          "DNS donne des indices, pas des conclusions finales.",
+          "Note les TTL et types de reponse si disponibles."
+        ],
+        commands: ["dig @10.10.10.53 lab.local", "dig AAAA example.com"],
+        commonMistake: "Transformer une enumeration DNS en scan hors scope.",
+        validation: "Les requetes restent dans le perimetre."
+      },
+      {
+        title: "Chercher les informations sensibles",
+        objective: "Identifier ce qui pourrait aider un attaquant: noms internes, roles, environnements.",
+        expectedEvidence: "Liste des informations exposees et impact potentiel.",
+        mentorHints: [
+          "Un nom de machine peut reveler un role.",
+          "Un TXT peut exposer une configuration.",
+          "Le risque depend de la sensibilite des informations."
+        ],
+        commands: ["dig +trace example.com", "dig @10.10.10.53 lab.local"],
+        commonMistake: "Confondre information visible et faille critique.",
+        validation: "L'impact est proportionne aux donnees exposees."
+      },
+      {
+        title: "Recommander la correction",
+        objective: "Proposer une hygiene DNS: split-horizon, limitation, revue de zone.",
+        expectedEvidence: "Mesures DNS et controle de verification.",
+        mentorHints: [
+          "La correction peut etre organisationnelle et technique.",
+          "Une revue de zone reguliere evite l'accumulation.",
+          "Pense exposition interne vs externe."
+        ],
+        commands: ["sudo nft list ruleset"],
+        commonMistake: "Supprimer des enregistrements sans comprendre les dependances.",
+        validation: "La remediation preserve le service legitime."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "Une mauvaise hygiene DNS peut exposer des informations d'architecture utiles a la reconnaissance.",
+      technicalFindings: [
+        "Les enregistrements DNS doivent etre limites aux besoins reels.",
+        "Les noms internes et roles techniques peuvent augmenter la surface d'information.",
+        "La correction doit preserver la resolution necessaire."
+      ],
+      remediation: [
+        "Mettre en place split-horizon si necessaire.",
+        "Limiter les transferts de zone et l'acces aux resolveurs internes.",
+        "Revoir periodiquement les enregistrements sensibles."
+      ]
+    }
+  },
+  {
+    id: "mission-08",
+    title: "Firewall trop permissif",
+    level: "Avance",
+    duration: "55 min",
+    scenario:
+      "Une regle temporaire semble avoir ouvert trop largement la DMZ. Tu dois analyser les flux et proposer une regle plus stricte.",
+    scope: ["Firewall LAB-FW", "DMZ_WEB", "VLAN 20 GUEST", "VLAN 30 SERVERS"],
+    rules: [
+      "Analyser les flux avant de corriger.",
+      "Ne jamais proposer allow any.",
+      "Justifier chaque exception.",
+      "Inclure un plan de retour arriere."
+    ],
+    skills: ["Firewall", "Moindre privilege", "VLAN", "Routage", "Remediation"],
+    assets: [
+      "Ruleset nft simule",
+      "Matrice de flux attendue",
+      "Zones LAN, GUEST, SERVERS, DMZ"
+    ],
+    steps: [
+      {
+        title: "Lire la politique actuelle",
+        objective: "Identifier la politique par defaut et les exceptions trop larges.",
+        expectedEvidence: "Regle suspecte, source, destination, service, action.",
+        mentorHints: [
+          "Lis la politique par defaut avant les exceptions.",
+          "Une regle large peut masquer plusieurs besoins differents.",
+          "Cherche source, destination et service."
+        ],
+        commands: ["sudo nft list ruleset", "show vlan brief"],
+        commonMistake: "Corriger une regle sans comprendre le besoin metier.",
+        validation: "La regle suspecte est decrite precisement."
+      },
+      {
+        title: "Construire une matrice cible",
+        objective: "Definir les flux qui doivent rester autorises apres correction.",
+        expectedEvidence: "Matrice source -> destination -> service -> decision.",
+        mentorHints: [
+          "Une matrice evite les exceptions implicites.",
+          "Chaque flux doit avoir un proprietaire ou un besoin.",
+          "Documente aussi les flux refuses."
+        ],
+        commands: ["ip route", "ip route get 203.0.113.10"],
+        commonMistake: "Se concentrer uniquement sur ce qui doit etre autorise.",
+        validation: "La matrice contient autorisations et refus."
+      },
+      {
+        title: "Proposer une regle minimale",
+        objective: "Remplacer la permissivite par une regle ciblee et testable.",
+        expectedEvidence: "Regle proposee, justification, test, rollback.",
+        mentorHints: [
+          "La regle doit etre lisible et testable.",
+          "Le rollback est une preuve de maturite operationnelle.",
+          "Ajoute du logging temporaire si utile."
+        ],
+        commands: ["sudo nft add rule inet filter input tcp dport 443 accept"],
+        commonMistake: "Remplacer une regle large par plusieurs regles toujours trop larges.",
+        validation: "La correction applique le moindre privilege."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "Un firewall trop permissif augmente le risque de mouvement lateral et d'exposition involontaire.",
+      technicalFindings: [
+        "Les exceptions doivent etre limitees par source, destination et service.",
+        "Les flux refuses sont aussi importants que les flux autorises.",
+        "Un plan de rollback limite le risque operationnel."
+      ],
+      remediation: [
+        "Remplacer les regles larges par des flux documentes.",
+        "Activer une journalisation temporaire pendant la verification.",
+        "Revoir les regles temporaires avec une date d'expiration."
+      ]
+    }
+  },
+  {
+    id: "mission-09",
+    title: "Service interne expose",
+    level: "Pentest encadre",
+    duration: "55 min",
+    scenario:
+      "Un service prevu pour le reseau interne apparait accessible depuis une zone moins fiable. Tu dois confirmer l'exposition et expliquer l'impact sans exploitation.",
+    scope: ["10.10.10.0/28", "service interne simule", "zones GUEST et DMZ"],
+    rules: [
+      "Ne pas exploiter le service.",
+      "Verifier uniquement l'accessibilite et les bannieres.",
+      "Documenter l'impact metier possible.",
+      "Proposer une segmentation corrigee."
+    ],
+    skills: ["Enumeration", "Scope", "Risque", "Firewall", "Reporting"],
+    assets: [
+      "Banniere service simulee",
+      "Topologie zones",
+      "Ruleset de filtrage"
+    ],
+    steps: [
+      {
+        title: "Confirmer l'accessibilite",
+        objective: "Verifier si le service repond depuis une zone non prevue.",
+        expectedEvidence: "Source, destination, port, reponse observee.",
+        mentorHints: [
+          "Accessibilite ne veut pas dire exploitation.",
+          "La source du test est essentielle.",
+          "Une banniere peut suffire comme preuve d'exposition."
+        ],
+        commands: ["nc -vz 10.0.0.10 443", "nmap -sV 10.10.10.0/28"],
+        commonMistake: "Aller plus loin que necessaire pour prouver l'exposition.",
+        validation: "La preuve montre uniquement l'exposition."
+      },
+      {
+        title: "Analyser l'impact",
+        objective: "Expliquer ce que cette exposition permettrait ou faciliterait.",
+        expectedEvidence: "Impact technique et impact metier plausible.",
+        mentorHints: [
+          "Reste conditionnel si tu n'as pas teste l'exploitation.",
+          "Relie le service a une fonction metier.",
+          "Priorise selon zone source et sensibilite."
+        ],
+        commands: ["curl -I http://10.0.20.10", "ss -ant"],
+        commonMistake: "Ecrire une criticite haute sans contexte.",
+        validation: "L'impact est nuance et justifie."
+      },
+      {
+        title: "Recommander la segmentation",
+        objective: "Proposer une correction reseau qui bloque l'exposition non necessaire.",
+        expectedEvidence: "Flux a bloquer, flux a conserver, test de verification.",
+        mentorHints: [
+          "Corrige le chemin, pas seulement le symptome.",
+          "Garde les flux legitimes.",
+          "Prevois une verification apres changement."
+        ],
+        commands: ["sudo nft list ruleset", "show vlan brief"],
+        commonMistake: "Bloquer le service pour tout le monde sans analyse.",
+        validation: "La segmentation cible la zone non fiable."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "L'exposition d'un service interne a une zone moins fiable augmente le risque d'enumeration et d'abus futur.",
+      technicalFindings: [
+        "La preuve doit montrer accessibilite, source et destination.",
+        "L'impact depend du role du service et de la zone source.",
+        "La segmentation doit bloquer le chemin non legitime."
+      ],
+      remediation: [
+        "Restreindre le service aux zones autorisees.",
+        "Mettre a jour la matrice de flux.",
+        "Verifier apres changement depuis chaque zone."
+      ]
+    }
+  },
+  {
+    id: "mission-10",
+    title: "Incident blue team simule",
+    level: "Pentest encadre",
+    duration: "65 min",
+    scenario:
+      "Une alerte combine DNS inhabituel, connexions web et tentative d'acces admin. Tu dois conduire une mini investigation et produire une decision proportionnee.",
+    scope: ["logs DNS simules", "logs web simules", "auth.log simule", "client 10.42.0.24"],
+    rules: [
+      "Preserver les faits avant decision.",
+      "Ne pas conclure incident majeur sans correlation.",
+      "Proposer containment proportionne.",
+      "Inclure les limites de l'analyse."
+    ],
+    skills: ["Detection", "Logs", "Communication", "Risque", "Reporting"],
+    assets: [
+      "Evenements DNS",
+      "Requetes web",
+      "Tentatives SSH",
+      "Chronologie fictive"
+    ],
+    steps: [
+      {
+        title: "Construire la chronologie",
+        objective: "Ordonner les evenements par heure, source et systeme concerne.",
+        expectedEvidence: "Timeline courte avec source, evenement et preuve.",
+        mentorHints: [
+          "La chronologie evite les conclusions trop rapides.",
+          "Regroupe les evenements par source.",
+          "Note les trous dans les donnees."
+        ],
+        commands: ["dig @10.10.10.53 lab.local", "tshark -r capture.pcap -Y 'http'"],
+        commonMistake: "Analyser chaque log separement sans correlation.",
+        validation: "La timeline relie au moins deux sources de logs."
+      },
+      {
+        title: "Qualifier la gravite",
+        objective: "Determiner si le signal justifie surveillance, containment ou escalation.",
+        expectedEvidence: "Gravite, justification, incertitudes.",
+        mentorHints: [
+          "Une bonne decision inclut les incertitudes.",
+          "Containment ne veut pas toujours dire coupure totale.",
+          "La gravite depend des actifs touches."
+        ],
+        commands: ["ss -tulpn", "sudo nft list ruleset"],
+        commonMistake: "Escalader au niveau maximum sans preuve de compromission.",
+        validation: "La gravite est argumentee et proportionnee."
+      },
+      {
+        title: "Proposer le plan de reponse",
+        objective: "Definir actions immediates, verification et suivi.",
+        expectedEvidence: "Actions a 1h, 24h, 7j avec proprietaire probable.",
+        mentorHints: [
+          "Un plan de reponse doit etre executable.",
+          "Separe containment, eradication et amelioration.",
+          "Ajoute un critere de retour a la normale."
+        ],
+        commands: ["sudo nft add rule inet filter input tcp dport 443 accept"],
+        commonMistake: "Faire une liste technique sans priorite temporelle.",
+        validation: "Le plan est priorise dans le temps."
+      }
+    ],
+    finalReport: {
+      executiveSummary:
+        "Une investigation blue team efficace correle les signaux, qualifie la gravite et propose une reponse proportionnee.",
+      technicalFindings: [
+        "La chronologie est la base de la qualification.",
+        "La correlation multi-sources reduit les faux positifs.",
+        "Le plan de reponse doit inclure actions immediates et suivi."
+      ],
+      remediation: [
+        "Centraliser les logs DNS, web et authentification.",
+        "Definir des seuils et procedures d'escalade.",
+        "Tester regulierement les plans de reponse."
+      ]
+    }
   }
 ];

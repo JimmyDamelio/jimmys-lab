@@ -1,6 +1,6 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Activity, BarChart3, BookOpen, Brain, ClipboardCheck, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, Award, BarChart3, BookOpen, Brain, ClipboardCheck, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import ProgressTracker from "./components/ProgressTracker";
 import { lessons } from "./data/curriculum";
@@ -16,8 +16,9 @@ const ToolsPanel = lazy(() => import("./components/ToolsPanel"));
 const StatsPanel = lazy(() => import("./components/StatsPanel"));
 const MissionCenter = lazy(() => import("./components/MissionCenter"));
 const SkillsPanel = lazy(() => import("./components/SkillsPanel"));
+const ExamPanel = lazy(() => import("./components/ExamPanel"));
 
-type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "skills" | "tools" | "stats";
+type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "skills" | "exam" | "tools" | "stats";
 type NavItem = [View, LucideIcon, string];
 
 function ViewLoader() {
@@ -116,6 +117,7 @@ export default function App() {
                 ["quiz", ShieldCheck, "Quiz"],
                 ["missions", ClipboardCheck, "Missions"],
                 ["skills", Brain, "Competences"],
+                ["exam", Award, "Examen"],
                 ["tools", Wrench, "Outils"],
                 ["stats", BarChart3, "Stats"]
               ] satisfies NavItem[]).map(([id, Icon, label]) => (
@@ -170,6 +172,7 @@ export default function App() {
                 missionEvidence={missionEvidence}
               />
             )}
+            {view === "exam" && <ExamPanel />}
             {view === "tools" && <ToolsPanel />}
             {view === "stats" && <StatsPanel lessons={lessons} progress={progress} labProgress={labProgress} />}
           </Suspense>

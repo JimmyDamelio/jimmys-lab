@@ -1,4 +1,4 @@
-import type { LabProgressRow, MissionEvidenceRow, ProgressRow, QuizAttemptRow } from "../types";
+import type { ExamAttemptRow, LabProgressRow, MissionEvidenceRow, ProgressRow, QuizAttemptRow } from "../types";
 
 const baseUrl = import.meta.env.VITE_API_URL ?? "";
 
@@ -63,6 +63,28 @@ export async function saveMissionEvidence(
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(evidence)
+  });
+  if (!response.ok) return null;
+  return response.json();
+}
+
+export async function fetchExamAttempts(): Promise<ExamAttemptRow[]> {
+  const response = await fetch(`${baseUrl}/api/progress/exams`);
+  if (!response.ok) return [];
+  return response.json();
+}
+
+export async function saveExamAttempt(
+  examId: string,
+  payload: Pick<
+    ExamAttemptRow,
+    "scope_score" | "recon_score" | "evidence_score" | "risk_score" | "remediation_score" | "report"
+  >
+): Promise<ExamAttemptRow | null> {
+  const response = await fetch(`${baseUrl}/api/progress/exams/${examId}/attempts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
   });
   if (!response.ok) return null;
   return response.json();

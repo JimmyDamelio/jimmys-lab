@@ -23,6 +23,7 @@ Le backend Express ecoute sur `http://localhost:4000` et sert automatiquement le
 - Missions pentest encadrees avec preuves structurees sauvegardees en SQLite.
 - Export Markdown des rapports de mission.
 - Tableau de competences calcule depuis cours, labs et missions.
+- Mode examen final avec scoring, historique SQLite et rapport Markdown.
 - Export JSON de progression via `http://localhost:4000/api/progress/export`.
 
 ## Structure

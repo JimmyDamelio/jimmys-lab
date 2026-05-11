@@ -108,3 +108,17 @@ export interface MissionEvidenceRow {
   completed: 0 | 1;
   updated_at: string;
 }
+
+export interface ExamAttemptRow {
+  id: number;
+  exam_id: string;
+  score: number;
+  passed: 0 | 1;
+  scope_score: number;
+  recon_score: number;
+  evidence_score: number;
+  risk_score: number;
+  remediation_score: number;
+  report: string;
+  created_at: string;
+}

@@ -84,15 +84,55 @@ progressRouter.post("/missions/:missionId/steps/:stepIndex", async (req, res, ne
   }
 });
 
+progressRouter.get("/exams", async (_req, res, next) => {
+  try {
+    res.json(await all("SELECT * FROM exam_attempts ORDER BY created_at DESC LIMIT 50"));
+  } catch (error) {
+    next(error);
+  }
+});
+
+progressRouter.post("/exams/:examId/attempts", async (req, res, next) => {
+  try {
+    const {
+      scope_score = 0,
+      recon_score = 0,
+      evidence_score = 0,
+      risk_score = 0,
+      remediation_score = 0,
+      report = ""
+    } = req.body;
+    const scores = [
+      Number(scope_score),
+      Number(recon_score),
+      Number(evidence_score),
+      Number(risk_score),
+      Number(remediation_score)
+    ].map((score) => Math.max(0, Math.min(20, score)));
+    const total = scores.reduce((sum, score) => sum + score, 0);
+    const result = await run(
+      `INSERT INTO exam_attempts (
+        exam_id, score, passed, scope_score, recon_score, evidence_score, risk_score, remediation_score, report
+       )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [req.params.examId, total, total >= 80 ? 1 : 0, ...scores, String(report ?? "")]
+    );
+    res.json(await get("SELECT * FROM exam_attempts WHERE id = ?", [result.id]));
+  } catch (error) {
+    next(error);
+  }
+});
+
 progressRouter.get("/export", async (_req, res, next) => {
   try {
-    const [progress, labProgress, quizAttempts, notes, labRuns, missionEvidence] = await Promise.all([
+    const [progress, labProgress, quizAttempts, notes, labRuns, missionEvidence, examAttempts] = await Promise.all([
       all("SELECT * FROM progress ORDER BY updated_at DESC"),
       all("SELECT * FROM lab_progress ORDER BY updated_at DESC"),
       all("SELECT * FROM quiz_attempts ORDER BY created_at DESC LIMIT 1000"),
       all("SELECT * FROM notes ORDER BY updated_at DESC"),
       all("SELECT * FROM lab_runs ORDER BY created_at DESC LIMIT 500"),
-      all("SELECT * FROM mission_evidence ORDER BY updated_at DESC")
+      all("SELECT * FROM mission_evidence ORDER BY updated_at DESC"),
+      all("SELECT * FROM exam_attempts ORDER BY created_at DESC LIMIT 100")
     ]);
     res.json({
       exported_at: new Date().toISOString(),
@@ -101,7 +141,8 @@ progressRouter.get("/export", async (_req, res, next) => {
       quiz_attempts: quizAttempts,
       notes,
       lab_runs: labRuns,
-      mission_evidence: missionEvidence
+      mission_evidence: missionEvidence,
+      exam_attempts: examAttempts
     });
   } catch (error) {
     next(error);

@@ -48,17 +48,25 @@ git --git-dir=.git-store --work-tree=. log --oneline
 git --git-dir=.git-store --work-tree=. diff
 ```
 
+Le script local `jgit` raccourcit ces commandes:
+
+```bash
+./jgit status
+./jgit log --oneline
+./jgit diff
+```
+
 Pour enregistrer une modification:
 
 ```bash
-git --git-dir=.git-store --work-tree=. add .
-git --git-dir=.git-store --work-tree=. commit -m "Description courte du changement"
+./jgit add .
+./jgit commit -m "Description courte du changement"
 ```
 
 Pour pousser vers GitHub avec la cle SSH locale dediee:
 
 ```bash
-GIT_SSH_COMMAND='ssh -F /dev/null -i ~/.ssh/id_ed25519_github -o IdentitiesOnly=yes' git --git-dir=.git-store --work-tree=. push
+./jgit push
 ```
 
 Le remote configure est:

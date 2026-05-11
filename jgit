@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+set -eu
+
+repo_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+export GIT_SSH_COMMAND="${GIT_SSH_COMMAND:-ssh -F /dev/null -i ~/.ssh/id_ed25519_github -o IdentitiesOnly=yes}"
+
+exec git --git-dir="$repo_dir/.git-store" --work-tree="$repo_dir" "$@"

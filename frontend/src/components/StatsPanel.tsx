@@ -139,6 +139,20 @@ export default function StatsPanel({ lessons, progress, labProgress }: Props) {
           </code>
         </article>
       </section>
+
+      <section
+        className="relative min-h-[320px] overflow-hidden rounded-lg border border-[var(--color-line)] bg-cover bg-center"
+        style={{ backgroundImage: "url('/bg.webp')" }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/62 to-black/25" />
+        <div className="relative flex min-h-[320px] max-w-3xl flex-col justify-end p-6 md:p-8">
+          <p className="text-sm font-semibold uppercase tracking-wider text-[var(--color-accent-soft)]">Derriere ce projet</p>
+          <h3 className="mt-3 text-4xl font-semibold tracking-normal text-white md:text-5xl">Edunos Jimmy</h3>
+          <blockquote className="mt-5 max-w-2xl text-xl leading-9 text-slate-100/90">
+            "J'ai lance ce projet avec l'aide de Codex pour apprendre, progresser et m'entrainer librement dans un cadre propre, pratique et ethique."
+          </blockquote>
+        </div>
+      </section>
     </div>
   );
 }

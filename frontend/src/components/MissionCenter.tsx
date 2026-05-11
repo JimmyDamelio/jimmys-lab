@@ -17,6 +17,10 @@ import { missions } from "../data/missions";
 import type { MissionEvidenceRow } from "../types";
 import { fetchMissionEvidence, saveMissionEvidence } from "../utils/api";
 
+interface Props {
+  onEvidenceChange?: () => Promise<void>;
+}
+
 type EvidenceKey = "observation" | "command" | "interpretation" | "risk" | "remediation";
 type EvidenceDraft = Record<EvidenceKey, string>;
 type EvidenceByMission = Record<string, Record<number, EvidenceDraft>>;
@@ -87,7 +91,7 @@ function buildInitialEvidence(): EvidenceByMission {
   }, {});
 }
 
-export default function MissionCenter() {
+export default function MissionCenter({ onEvidenceChange }: Props) {
   const [missionId, setMissionId] = useState(missions[0].id);
   const [stepIndex, setStepIndex] = useState(0);
   const [hintLevel, setHintLevel] = useState(1);
@@ -249,6 +253,7 @@ export default function MissionCenter() {
           [stepIndex]: evidenceFromRow(saved)
         }
       }));
+      await onEvidenceChange?.();
       setSaveState("saved");
     } catch {
       setSaveState("offline");

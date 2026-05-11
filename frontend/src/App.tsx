@@ -1,11 +1,11 @@
 import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Activity, BarChart3, BookOpen, ClipboardCheck, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
+import { Activity, BarChart3, BookOpen, Brain, ClipboardCheck, FlaskConical, Network, PanelLeftClose, PanelLeftOpen, ShieldCheck, Wrench } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import ProgressTracker from "./components/ProgressTracker";
 import { lessons } from "./data/curriculum";
-import { fetchLabProgress, fetchProgress, saveProgress } from "./utils/api";
-import type { LabProgressRow, ProgressRow } from "./types";
+import { fetchLabProgress, fetchMissionEvidence, fetchProgress, saveProgress } from "./utils/api";
+import type { LabProgressRow, MissionEvidenceRow, ProgressRow } from "./types";
 import type { LucideIcon } from "lucide-react";
 
 const LessonViewer = lazy(() => import("./components/LessonViewer"));
@@ -15,8 +15,9 @@ const QuizEngine = lazy(() => import("./components/QuizEngine"));
 const ToolsPanel = lazy(() => import("./components/ToolsPanel"));
 const StatsPanel = lazy(() => import("./components/StatsPanel"));
 const MissionCenter = lazy(() => import("./components/MissionCenter"));
+const SkillsPanel = lazy(() => import("./components/SkillsPanel"));
 
-type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "tools" | "stats";
+type View = "lesson" | "topology" | "lab" | "quiz" | "missions" | "skills" | "tools" | "stats";
 type NavItem = [View, LucideIcon, string];
 
 function ViewLoader() {
@@ -38,6 +39,7 @@ export default function App() {
   const [sidebarCompact, setSidebarCompact] = useState(true);
   const [progress, setProgress] = useState<ProgressRow[]>([]);
   const [labProgress, setLabProgress] = useState<LabProgressRow[]>([]);
+  const [missionEvidence, setMissionEvidence] = useState<MissionEvidenceRow[]>([]);
 
   const activeLesson = useMemo(
     () => lessons.find((lesson) => lesson.id === activeLessonId) ?? lessons[0],
@@ -47,6 +49,7 @@ export default function App() {
   useEffect(() => {
     fetchProgress().then(setProgress);
     fetchLabProgress().then(setLabProgress);
+    fetchMissionEvidence().then(setMissionEvidence);
   }, []);
 
   async function handleQuizComplete(score: number) {
@@ -112,6 +115,7 @@ export default function App() {
                 ["lab", FlaskConical, "Lab"],
                 ["quiz", ShieldCheck, "Quiz"],
                 ["missions", ClipboardCheck, "Missions"],
+                ["skills", Brain, "Competences"],
                 ["tools", Wrench, "Outils"],
                 ["stats", BarChart3, "Stats"]
               ] satisfies NavItem[]).map(([id, Icon, label]) => (
@@ -157,7 +161,15 @@ export default function App() {
               />
             )}
             {view === "quiz" && <QuizEngine lesson={activeLesson} onComplete={handleQuizComplete} />}
-            {view === "missions" && <MissionCenter />}
+            {view === "missions" && <MissionCenter onEvidenceChange={async () => setMissionEvidence(await fetchMissionEvidence())} />}
+            {view === "skills" && (
+              <SkillsPanel
+                lessons={lessons}
+                progress={progress}
+                labProgress={labProgress}
+                missionEvidence={missionEvidence}
+              />
+            )}
             {view === "tools" && <ToolsPanel />}
             {view === "stats" && <StatsPanel lessons={lessons} progress={progress} labProgress={labProgress} />}
           </Suspense>
